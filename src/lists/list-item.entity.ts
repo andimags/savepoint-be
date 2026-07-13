@@ -1,38 +1,38 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Game } from '../games/game.entity';
-import { List } from './list.entity';
+    Column,
+    CreateDateColumn,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from "typeorm";
+import { Game } from "../games/game.entity";
+import { List } from "./list.entity";
 
-@Entity('list_items')
-@Index(['listId', 'gameId'], { unique: true })
+@Entity("list_items")
+@Index(["listId", "gameId"], { unique: true })
 export class ListItem {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
-  @Column()
-  listId: string;
+    @Column()
+    listId: string;
 
-  @ManyToOne(() => List, (list) => list.items, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'listId' })
-  list: List;
+    @ManyToOne(() => List, (list) => list.items, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "listId" })
+    list: List;
 
-  @Column()
-  gameId: string;
+    @Column()
+    gameId: string;
 
-  @ManyToOne(() => Game, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'gameId' })
-  game: Game;
+    @ManyToOne(() => Game, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "gameId" })
+    game: Game;
 
-  @Column({ type: 'int', default: 0 })
-  position: number;
+    @Column({ type: "int", default: 0 })
+    position: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 }

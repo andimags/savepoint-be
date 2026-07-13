@@ -1,40 +1,40 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { User } from '../users/user.entity';
-import { ListItem } from './list-item.entity';
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from "typeorm";
+import { User } from "../users/user.entity";
+import { ListItem } from "./list-item.entity";
 
-@Entity('lists')
+@Entity("lists")
 export class List {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
-  @Column()
-  userId: string;
+    @Column()
+    userId: string;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
-  user: User;
+    @ManyToOne(() => User, { onDelete: "CASCADE" })
+    @JoinColumn({ name: "userId" })
+    user: User;
 
-  @Column()
-  title: string;
+    @Column()
+    title: string;
 
-  @Column({ type: 'text', nullable: true })
-  description: string | null;
+    @Column({ type: "text", nullable: true })
+    description: string | null;
 
-  @OneToMany(() => ListItem, (item) => item.list)
-  items: ListItem[];
+    @OneToMany(() => ListItem, (item) => item.list)
+    items: ListItem[];
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
