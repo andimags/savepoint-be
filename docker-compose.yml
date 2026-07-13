@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: savepoint
+      POSTGRES_PASSWORD: savepoint
+      POSTGRES_DB: savepoint
+    ports:
+      - "5433:5432"
+    volumes:
+      - savepoint_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - savepoint_redis_data:/data
+
+volumes:
+  savepoint_postgres_data:
+  savepoint_redis_data:
