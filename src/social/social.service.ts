@@ -44,17 +44,28 @@ export class SocialService {
         const following = await this.followsRepository.find({
             where: { followerId: viewerId },
         });
-        const authorIds = following.map((f) => f.followingId);
-        if (authorIds.length === 0) {
-            return { items: [], page, limit, hasMore: false };
-        }
+        // The viewer's own activity belongs in their feed alongside the people
+        // they follow, so a new user still sees their own reviews, logs, lists,
+        // and library additions before following anyone.
+        const authorIds = [viewerId, ...following.map((f) => f.followingId)];
 
         const window = page * limit;
-        const [reviewPage, diaryEntries, recentLists] = await Promise.all([
-            this.reviewsService.findRecentByAuthors(viewerId, authorIds, window),
-            this.diaryService.findRecentByAuthors(authorIds, window),
-            this.listsService.findRecentByAuthors(authorIds, window),
-        ]);
+        const [reviewPage, diaryEntries, recentLists, libraryGames] =
+            await Promise.all([
+                this.reviewsService.findRecentByAuthors(
+                    viewerId,
+                    authorIds,
+                    window,
+                ),
+                this.diaryService.findRecentByAuthors(authorIds, window),
+                this.listsService.findRecentByAuthors(authorIds, window),
+                this.userGamesRepository.find({
+                    where: { userId: In(authorIds) },
+                    relations: { game: true, user: true },
+                    order: { createdAt: "DESC" },
+                    take: window,
+                }),
+            ]);
 
         const reviewItems = reviewPage.items.map((review) => ({
             type: "review" as const,
@@ -89,8 +100,28 @@ export class SocialService {
                 author: list.owner,
             },
         }));
+        const libraryItems = libraryGames.map((entry) => ({
+            type: "library" as const,
+            createdAt: entry.createdAt,
+            library: {
+                id: entry.id,
+                status: entry.status,
+                platform: entry.platform,
+                game: {
+                    id: entry.game.id,
+                    name: entry.game.name,
+                    coverUrl: entry.game.coverUrl,
+                },
+                author: { id: entry.user.id, username: entry.user.username },
+            },
+        }));
 
-        const merged = [...reviewItems, ...diaryItems, ...listItems].sort(
+        const merged = [
+            ...reviewItems,
+            ...diaryItems,
+            ...listItems,
+            ...libraryItems,
+        ].sort(
             (a, b) =>
                 new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime(),
