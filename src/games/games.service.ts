@@ -61,6 +61,28 @@ export class GamesService implements OnApplicationBootstrap {
         return this.gamesRepository.save(game);
     }
 
+    async upsertByPsnTitleId(
+        psnTitleId: string,
+        name: string,
+        coverUrl: string | null,
+    ): Promise<Game> {
+        const existing = await this.gamesRepository.findOne({
+            where: { psnTitleId },
+        });
+        if (existing) {
+            existing.name = name;
+            // Prefer RAWG artwork when present; PSN icons are lower-res
+            if (!existing.rawgId) existing.coverUrl = coverUrl;
+            return this.gamesRepository.save(existing);
+        }
+        const game = this.gamesRepository.create({
+            psnTitleId,
+            name,
+            coverUrl,
+        });
+        return this.gamesRepository.save(game);
+    }
+
     async upsertFromRawg(rawgGame: RawgGame): Promise<Game> {
         let game = await this.gamesRepository.findOne({
             where: { rawgId: rawgGame.id },
@@ -179,10 +201,16 @@ export class GamesService implements OnApplicationBootstrap {
      */
     async enrichGame(game: Game, rawgGame: RawgGame): Promise<Game> {
         // If a prior run already created a separate row for this rawgId, remove it to free the unique slot.
+        // Only drop pure name-placeholder rows — never one anchored to a real store id (Steam or PSN).
         const duplicate = await this.gamesRepository.findOne({
             where: { rawgId: rawgGame.id },
         });
-        if (duplicate && duplicate.id !== game.id && !duplicate.steamAppId) {
+        if (
+            duplicate &&
+            duplicate.id !== game.id &&
+            !duplicate.steamAppId &&
+            !duplicate.psnTitleId
+        ) {
             await this.gamesRepository.delete(duplicate.id);
         }
 

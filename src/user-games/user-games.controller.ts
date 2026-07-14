@@ -20,11 +20,11 @@ import { GamePlatform, GameStatus } from "./user-game.entity";
 type Req = { user: { userId: string } };
 
 class UpdateUserGameDto {
-    // Optional so callers can update status and platform independently. A null status
-    // clears it; an omitted field leaves the current value untouched.
+    // Optional so callers can update status and platform independently.
+    // An omitted field leaves the current value untouched.
     @IsOptional()
     @IsEnum(GameStatus)
-    status?: GameStatus | null;
+    status?: GameStatus;
 
     @IsOptional()
     @IsEnum(GamePlatform)

@@ -54,8 +54,8 @@ export class UserGame {
     @Column({ type: "int", default: 0 })
     playtimeMinutes: number;
 
-    @Column({ type: "enum", enum: GameStatus, nullable: true })
-    status: GameStatus | null;
+    @Column({ type: "enum", enum: GameStatus, default: GameStatus.BACKLOG })
+    status: GameStatus;
 
     @Column({ type: "timestamp", nullable: true })
     lastPlayedAt: Date | null;

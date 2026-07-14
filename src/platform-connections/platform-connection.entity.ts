@@ -12,6 +12,7 @@ import { User } from "../users/user.entity";
 
 export enum Platform {
     STEAM = "STEAM",
+    PSN = "PSN",
     PS5 = "PS5",
     STEAM_DECK = "STEAM_DECK",
     PC = "PC",
@@ -43,6 +44,17 @@ export class PlatformConnection {
 
     @Column({ type: "varchar", nullable: true })
     steamId64: string | null;
+
+    // PSN long-lived refresh token, used to mint a fresh access token on each resync
+    // without the user re-supplying their NPSSO. Secret — never returned by the API.
+    @Column({ type: "varchar", nullable: true })
+    psnRefreshToken: string | null;
+
+    @Column({ type: "varchar", nullable: true })
+    psnAccountId: string | null;
+
+    @Column({ type: "varchar", nullable: true })
+    psnOnlineId: string | null;
 
     @Column({ type: "enum", enum: SyncStatus, default: SyncStatus.PENDING })
     syncStatus: SyncStatus;

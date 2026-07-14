@@ -35,6 +35,14 @@ export class User {
     @Column({ type: "varchar", nullable: true })
     topFranchise: string | null;
 
+    // Editable display labels for linked platform accounts, shown on the profile
+    // instead of the raw synced identifiers (Steam only exposes a numeric id).
+    @Column({ type: "varchar", nullable: true })
+    steamUsername: string | null;
+
+    @Column({ type: "varchar", nullable: true })
+    psnUsername: string | null;
+
     @Column()
     passwordHash: string;
 

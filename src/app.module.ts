@@ -21,6 +21,7 @@ import { AuthModule } from "./auth/auth.module";
 import { GamesModule } from "./games/games.module";
 import { PlatformConnectionsModule } from "./platform-connections/platform-connections.module";
 import { SteamModule } from "./steam/steam.module";
+import { PsnModule } from "./psn/psn.module";
 import { UserGamesModule } from "./user-games/user-games.module";
 import { RatingsModule } from "./ratings/ratings.module";
 import { ReviewsModule } from "./reviews/reviews.module";
@@ -69,6 +70,7 @@ import { RecommendationsModule } from "./recommendations/recommendations.module"
         AuthModule,
         GamesModule,
         SteamModule,
+        PsnModule,
         PlatformConnectionsModule,
         UserGamesModule,
         RatingsModule,

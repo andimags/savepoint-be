@@ -51,6 +51,8 @@ export class UsersService {
             topGameIds?: string[];
             favoriteGenres?: string[];
             topFranchise?: string | null;
+            steamUsername?: string | null;
+            psnUsername?: string | null;
         },
     ): Promise<User> {
         const user = await this.usersRepository.findOne({
@@ -82,6 +84,12 @@ export class UsersService {
         }
         if (updates.topFranchise !== undefined) {
             user.topFranchise = updates.topFranchise?.trim() || null;
+        }
+        if (updates.steamUsername !== undefined) {
+            user.steamUsername = updates.steamUsername?.trim() || null;
+        }
+        if (updates.psnUsername !== undefined) {
+            user.psnUsername = updates.psnUsername?.trim() || null;
         }
         return this.usersRepository.save(user);
     }

@@ -9,6 +9,11 @@ import { Follow } from "./follow.entity";
 import { User } from "../users/user.entity";
 import { Game } from "../games/game.entity";
 import { GameStatus, UserGame } from "../user-games/user-game.entity";
+import {
+    Platform,
+    PlatformConnection,
+    SyncStatus,
+} from "../platform-connections/platform-connection.entity";
 import { ReviewsService } from "../reviews/reviews.service";
 import { DiaryService } from "../diary/diary.service";
 import { ListsService } from "../lists/lists.service";
@@ -24,18 +29,31 @@ export class SocialService {
         private readonly userGamesRepository: Repository<UserGame>,
         @InjectRepository(Game)
         private readonly gamesRepository: Repository<Game>,
+        @InjectRepository(PlatformConnection)
+        private readonly connectionsRepository: Repository<PlatformConnection>,
         private readonly reviewsService: ReviewsService,
         private readonly diaryService: DiaryService,
         private readonly listsService: ListsService,
     ) {}
 
-    /** Unified home feed of recent reviews, diary logs, and new lists, newest first. */
+    /**
+     * Unified home feed of recent reviews, diary logs, and new lists from the
+     * people the viewer follows, newest first.
+     */
     async activityFeed(viewerId: string, page: number, limit: number) {
+        const following = await this.followsRepository.find({
+            where: { followerId: viewerId },
+        });
+        const authorIds = following.map((f) => f.followingId);
+        if (authorIds.length === 0) {
+            return { items: [], page, limit, hasMore: false };
+        }
+
         const window = page * limit;
         const [reviewPage, diaryEntries, recentLists] = await Promise.all([
-            this.reviewsService.findRecent(viewerId, 1, window),
-            this.diaryService.findRecentGlobal(window),
-            this.listsService.findRecentGlobal(window),
+            this.reviewsService.findRecentByAuthors(viewerId, authorIds, window),
+            this.diaryService.findRecentByAuthors(authorIds, window),
+            this.listsService.findRecentByAuthors(authorIds, window),
         ]);
 
         const reviewItems = reviewPage.items.map((review) => ({
@@ -148,7 +166,18 @@ export class SocialService {
                 ? user.favoriteGenres
                 : genreRows.map((r) => r.genre);
 
+        // Whether the user has explicitly curated any favorite. The profile
+        // spotlight is hidden when false, so auto-derived fallbacks above never
+        // make the section appear on their own.
+        const hasFavorites = Boolean(
+            user.favoriteGameId ||
+                user.topGameIds.length > 0 ||
+                user.favoriteGenres.length > 0 ||
+                user.topFranchise,
+        );
+
         return {
+            hasFavorites,
             favoriteGame: favoriteGame
                 ? {
                       id: favoriteGame.id,
@@ -276,17 +305,23 @@ export class SocialService {
         });
         if (!user) throw new NotFoundException("User not found");
 
-        const [followerCount, followingCount, gameCount, isFollowing] =
-            await Promise.all([
-                this.followsRepository.count({
-                    where: { followingId: userId },
-                }),
-                this.followsRepository.count({ where: { followerId: userId } }),
-                this.userGamesRepository.count({ where: { userId } }),
-                this.followsRepository.exists({
-                    where: { followerId: viewerId, followingId: userId },
-                }),
-            ]);
+        const [
+            followerCount,
+            followingCount,
+            gameCount,
+            isFollowing,
+            connections,
+        ] = await Promise.all([
+            this.followsRepository.count({
+                where: { followingId: userId },
+            }),
+            this.followsRepository.count({ where: { followerId: userId } }),
+            this.userGamesRepository.count({ where: { userId } }),
+            this.followsRepository.exists({
+                where: { followerId: viewerId, followingId: userId },
+            }),
+            this.syncedConnections(user),
+        ]);
 
         return {
             id: user.id,
@@ -299,6 +334,37 @@ export class SocialService {
             gameCount,
             isFollowing,
             isSelf: userId === viewerId,
+            connections,
         };
+    }
+
+    /**
+     * Platform connections whose library sync has completed, shown as badges on
+     * the profile. The label is the user's edit-profile display name for the
+     * platform. When the name is unset we send null and the client omits the
+     * badge — we never fall back to the raw synced identifier (Steam's numeric
+     * id or PSN's online id). steamId64 is still returned so the client can link
+     * to the public Steam profile. Secrets such as the PSN refresh token never
+     * leave the server.
+     */
+    private async syncedConnections(user: User) {
+        const connections = await this.connectionsRepository.find({
+            where: { userId: user.id, syncStatus: SyncStatus.DONE },
+            order: { platform: "ASC" },
+        });
+        return connections.map((connection) => {
+            if (connection.platform === Platform.PSN) {
+                return {
+                    platform: connection.platform,
+                    username: user.psnUsername,
+                    steamId64: null as string | null,
+                };
+            }
+            return {
+                platform: connection.platform,
+                username: user.steamUsername,
+                steamId64: connection.steamId64,
+            };
+        });
     }
 }

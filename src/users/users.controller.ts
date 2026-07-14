@@ -82,6 +82,18 @@ class UpdateProfileDto {
     @IsString()
     @MaxLength(60)
     topFranchise?: string | null;
+
+    @IsOptional()
+    @ValidateIf((_, value) => value !== null)
+    @IsString()
+    @MaxLength(40)
+    steamUsername?: string | null;
+
+    @IsOptional()
+    @ValidateIf((_, value) => value !== null)
+    @IsString()
+    @MaxLength(40)
+    psnUsername?: string | null;
 }
 
 class ChangePasswordDto {
@@ -103,6 +115,8 @@ function toMe(user: {
     topGameIds: string[];
     favoriteGenres: string[];
     topFranchise: string | null;
+    steamUsername: string | null;
+    psnUsername: string | null;
     createdAt: Date;
 }) {
     return {
@@ -115,6 +129,8 @@ function toMe(user: {
         topGameIds: user.topGameIds,
         favoriteGenres: user.favoriteGenres,
         topFranchise: user.topFranchise,
+        steamUsername: user.steamUsername,
+        psnUsername: user.psnUsername,
         createdAt: user.createdAt,
     };
 }

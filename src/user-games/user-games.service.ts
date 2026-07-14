@@ -55,6 +55,7 @@ export class UserGamesService {
             platform,
             playtimeMinutes,
             lastPlayedAt,
+            status: GameStatus.BACKLOG,
         });
         return this.userGamesRepository.save(userGame);
     }
@@ -88,7 +89,7 @@ export class UserGamesService {
     async update(
         userId: string,
         userGameId: string,
-        updates: { status?: GameStatus | null; platform?: GamePlatform },
+        updates: { status?: GameStatus; platform?: GamePlatform },
     ): Promise<UserGame> {
         const userGame = await this.userGamesRepository.findOne({
             where: { id: userGameId },
@@ -102,8 +103,6 @@ export class UserGamesService {
             await this.changePlatform(userGame, updates.platform);
         }
 
-        // A caller may send an explicit null to clear the status, so distinguish "omitted"
-        // (undefined) from "clear" (null) rather than relying on a truthiness check.
         if (updates.status !== undefined) {
             return this.setStatus(userId, userGameId, updates.status);
         }
@@ -136,7 +135,7 @@ export class UserGamesService {
     async setStatus(
         userId: string,
         userGameId: string,
-        status: GameStatus | null,
+        status: GameStatus,
     ): Promise<UserGame> {
         const userGame = await this.userGamesRepository.findOne({
             where: { id: userGameId },
@@ -150,8 +149,8 @@ export class UserGamesService {
         userGame.status = status;
         const saved = await this.userGamesRepository.save(userGame);
 
-        // Auto-log a diary entry whenever the status actually changes to a real status
-        if (status && status !== previousStatus) {
+        // Auto-log a diary entry whenever the status actually changes.
+        if (status !== previousStatus) {
             await this.diaryService.create(userId, {
                 gameId: userGame.gameId,
                 playedOn: new Date().toISOString().slice(0, 10),
@@ -179,14 +178,14 @@ export class UserGamesService {
         userId: string,
         gameId: string,
         platform: GamePlatform,
-        status: GameStatus | null,
+        status: GameStatus,
     ): Promise<UserGame> {
         const existing = await this.userGamesRepository.findOne({
             where: { userId, gameId, platform },
             relations: { game: true },
         });
         if (existing) {
-            if (status && status !== existing.status) {
+            if (status !== existing.status) {
                 return this.setStatus(userId, existing.id, status);
             }
             return existing;
@@ -199,12 +198,6 @@ export class UserGamesService {
                 playtimeMinutes: 0,
             }),
         );
-        if (status) {
-            return this.setStatus(userId, created.id, status);
-        }
-        return this.userGamesRepository.findOneOrFail({
-            where: { id: created.id },
-            relations: { game: true },
-        });
+        return this.setStatus(userId, created.id, status);
     }
 }

@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { DiaryEntry } from "./diary-entry.entity";
 import { GameStatus } from "../user-games/user-game.entity";
 
@@ -70,9 +70,13 @@ export class DiaryService {
         };
     }
 
-    /** Recent diary entries across all users, for the global activity feed. */
-    findRecentGlobal(limit: number): Promise<DiaryEntry[]> {
+    /** Recent diary entries by a set of authors, for the activity feed. */
+    findRecentByAuthors(
+        authorIds: string[],
+        limit: number,
+    ): Promise<DiaryEntry[]> {
         return this.diaryRepository.find({
+            where: { userId: In(authorIds) },
             relations: { game: true, user: true },
             order: { createdAt: "DESC" },
             take: limit,

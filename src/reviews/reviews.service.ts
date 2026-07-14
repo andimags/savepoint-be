@@ -73,6 +73,15 @@ export class ReviewsService {
         return this.findViews({}, viewerId, page, limit, true);
     }
 
+    /** Recent reviews written by a specific set of authors, for the activity feed. */
+    async findRecentByAuthors(
+        viewerId: string,
+        authorIds: string[],
+        limit: number,
+    ) {
+        return this.findViews({ authorIds }, viewerId, 1, limit, true);
+    }
+
     async findByUser(
         userId: string,
         viewerId: string,
@@ -83,7 +92,7 @@ export class ReviewsService {
     }
 
     private async findViews(
-        where: { gameId?: string; userId?: string },
+        where: { gameId?: string; userId?: string; authorIds?: string[] },
         viewerId: string,
         page: number,
         limit: number,
@@ -110,6 +119,11 @@ export class ReviewsService {
         }
         if (where.userId) {
             qb.andWhere("review.userId = :userId", { userId: where.userId });
+        }
+        if (where.authorIds) {
+            qb.andWhere("review.userId IN (:...authorIds)", {
+                authorIds: where.authorIds,
+            });
         }
 
         const [reviews, total] = await qb.getManyAndCount();

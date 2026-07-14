@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { List } from "./list.entity";
 import { ListItem } from "./list-item.entity";
 
@@ -56,9 +56,10 @@ export class ListsService {
         }));
     }
 
-    /** Recently created lists across all users, for the global activity feed. */
-    async findRecentGlobal(limit: number) {
+    /** Recently created lists by a set of authors, for the activity feed. */
+    async findRecentByAuthors(authorIds: string[], limit: number) {
         const lists = await this.listsRepository.find({
+            where: { userId: In(authorIds) },
             relations: { user: true },
             order: { createdAt: "DESC" },
             take: limit,

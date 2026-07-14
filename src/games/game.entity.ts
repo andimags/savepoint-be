@@ -13,6 +13,10 @@ export class Game {
     @Column({ type: "int", unique: true, nullable: true })
     steamAppId: number | null;
 
+    // PSN title id (e.g. "CUSA01433_00"); identifies the exact version played, mirrors steamAppId.
+    @Column({ type: "varchar", unique: true, nullable: true })
+    psnTitleId: string | null;
+
     @Column({ type: "int", unique: true, nullable: true })
     rawgId: number | null;
 
