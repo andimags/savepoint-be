@@ -51,11 +51,11 @@ export class PlatformConnectionsService {
         }
         connection = await this.connectionsRepository.save(connection);
 
-        await this.enqueueSync(connection);
+        await this.enqueueSteamSync(connection);
         return connection;
     }
 
-    async resync(userId: string): Promise<PlatformConnection> {
+    async resyncSteam(userId: string): Promise<PlatformConnection> {
         const connection = await this.connectionsRepository.findOne({
             where: { userId, platform: Platform.STEAM },
         });
@@ -67,11 +67,11 @@ export class PlatformConnectionsService {
         connection.syncStatus = SyncStatus.PENDING;
         connection.syncError = null;
         await this.connectionsRepository.save(connection);
-        await this.enqueueSync(connection);
+        await this.enqueueSteamSync(connection);
         return connection;
     }
 
-    getStatus(userId: string): Promise<PlatformConnection | null> {
+    getSteamStatus(userId: string): Promise<PlatformConnection | null> {
         return this.connectionsRepository.findOne({
             where: { userId, platform: Platform.STEAM },
         });
@@ -131,7 +131,9 @@ export class PlatformConnectionsService {
         });
     }
 
-    private async enqueueSync(connection: PlatformConnection): Promise<void> {
+    private async enqueueSteamSync(
+        connection: PlatformConnection,
+    ): Promise<void> {
         await this.steamSyncQueue.add("sync", {
             connectionId: connection.id,
             userId: connection.userId,

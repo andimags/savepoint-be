@@ -31,13 +31,13 @@ export class PlatformConnectionsController {
     }
 
     @Post("steam/resync")
-    resync(@Request() req: { user: { userId: string } }) {
-        return this.platformConnectionsService.resync(req.user.userId);
+    resyncSteam(@Request() req: { user: { userId: string } }) {
+        return this.platformConnectionsService.resyncSteam(req.user.userId);
     }
 
     @Get("steam/status")
-    async status(@Request() req: { user: { userId: string } }) {
-        const connection = await this.platformConnectionsService.getStatus(
+    async steamStatus(@Request() req: { user: { userId: string } }) {
+        const connection = await this.platformConnectionsService.getSteamStatus(
             req.user.userId,
         );
         if (!connection) {
