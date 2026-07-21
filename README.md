@@ -23,12 +23,12 @@ account syncing and game metadata enrichment via Redis-backed queues.
 
 ## System Architecture
 
-- **Modular structure** — each domain is a self-contained NestJS module (controller, service, entities).
-- **Layered flow** — controllers validate input and delegate to services; services own all business logic; TypeORM repositories handle persistence.
-- **Authentication** — JWT bearer tokens issued on login, validated by a Passport JWT strategy and guard.
-- **Background jobs** — long-running work (Steam sync, RAWG enrichment) is offloaded to BullMQ queues and processed by dedicated workers.
-- **Validation** — a global `ValidationPipe` (`whitelist`, `transform`) strips unknown fields and coerces types.
-- **CORS** — restricted to the configured frontend origin.
+- **Modular structure**: each domain is a self-contained NestJS module (controller, service, entities).
+- **Layered flow**: controllers validate input and delegate to services; services own all business logic; TypeORM repositories handle persistence.
+- **Authentication**: JWT bearer tokens issued on login, validated by a Passport JWT strategy and guard.
+- **Background jobs**: long-running work (Steam sync, RAWG enrichment) is offloaded to BullMQ queues and processed by dedicated workers.
+- **Validation**: a global `ValidationPipe` (`whitelist`, `transform`) strips unknown fields and coerces types.
+- **CORS**: restricted to the configured frontend origin.
 
 ---
 
@@ -92,11 +92,11 @@ TypeORM. Schema changes are applied via migrations (`src/database/migrations`);
 
 ### Naming Conventions
 
-- **Tables** — explicit `snake_case` names (e.g. `user_games`, `review_likes`).
-- **Columns** — `camelCase`, following the entity property names.
-- **Primary keys** — UUIDs (`id`).
-- **Timestamps** — `createdAt` / `updatedAt` managed by TypeORM.
-- **Uniqueness** — enforced with composite unique indexes (e.g. one rating per user per game).
+- **Tables**: explicit `snake_case` names (e.g. `user_games`, `review_likes`).
+- **Columns**: `camelCase`, following the entity property names.
+- **Primary keys**: UUIDs (`id`).
+- **Timestamps**: `createdAt` / `updatedAt` managed by TypeORM.
+- **Uniqueness**: enforced with composite unique indexes (e.g. one rating per user per game).
 
 ### Entity Relationship Diagram (ERD)
 
@@ -230,13 +230,13 @@ The API runs at `http://localhost:3001` by default.
 
 ## Coding Guidelines
 
-- **Controllers** — validate input, call services, return responses; no business logic.
-- **Services** — own all business logic; may call other services; avoid circular dependencies.
-- **DTOs** — always validate with `class-validator` / `class-transformer`.
-- **Repositories** — kept thin; complex logic belongs in services.
-- **Transactions** — wrap multi-step writes to avoid partial state.
-- **Configuration** — never hardcode secrets, URLs, or ports; use `ConfigService`.
-- **Import ordering** — Node → external packages → internal aliases → relative → types.
+- **Controllers**: validate input, call services, return responses; no business logic.
+- **Services**: own all business logic; may call other services; avoid circular dependencies.
+- **DTOs**: always validate with `class-validator` / `class-transformer`.
+- **Repositories**: kept thin; complex logic belongs in services.
+- **Transactions**: wrap multi-step writes to avoid partial state.
+- **Configuration**: never hardcode secrets, URLs, or ports; use `ConfigService`.
+- **Import ordering**: Node → external packages → internal aliases → relative → types.
 
 ---
 
@@ -260,9 +260,9 @@ start with `npm run start:prod`.
 
 ## Troubleshooting
 
-- **Startup fails on missing config** — `DATABASE_URL` and `REDIS_URL` are required and throw on boot if unset.
-- **Database connection refused** — ensure `docker compose up -d` is running and the port matches `DATABASE_URL`.
-- **Schema out of date** — run `npm run migration:run`.
-- **CORS errors** — set `FRONTEND_URL` to the frontend origin.
-- **Steam sync stuck** — verify `STEAM_API_KEY` and that Redis is reachable for the `steam-sync` queue.
-- **Avatar uploads fail** — set the `CLOUDINARY_*` variables; uploads are disabled when unconfigured.
+- **Startup fails on missing config**: `DATABASE_URL` and `REDIS_URL` are required and throw on boot if unset.
+- **Database connection refused**: ensure `docker compose up -d` is running and the port matches `DATABASE_URL`.
+- **Schema out of date**: run `npm run migration:run`.
+- **CORS errors**: set `FRONTEND_URL` to the frontend origin.
+- **Steam sync stuck**: verify `STEAM_API_KEY` and that Redis is reachable for the `steam-sync` queue.
+- **Avatar uploads fail**: set the `CLOUDINARY_*` variables; uploads are disabled when unconfigured.
