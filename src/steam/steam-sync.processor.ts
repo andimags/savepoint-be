@@ -18,6 +18,7 @@ export interface SteamSyncJobData {
     steamId64: string;
 }
 
+/* this is where the slow stuff happens --------------------------------------------------------- */
 @Processor("steam-sync")
 export class SteamSyncProcessor extends WorkerHost {
     private readonly logger = new Logger(SteamSyncProcessor.name);

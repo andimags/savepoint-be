@@ -18,6 +18,7 @@ export class PlatformConnectionsService {
     constructor(
         @InjectRepository(PlatformConnection)
         private readonly connectionsRepository: Repository<PlatformConnection>,
+        /* namespace naming, think of it like a folder separating related jobs -------------------------- */
         @InjectQueue("steam-sync")
         private readonly steamSyncQueue: Queue<SteamSyncJobData>,
         @InjectQueue("psn-sync")
@@ -134,6 +135,7 @@ export class PlatformConnectionsService {
     private async enqueueSteamSync(
         connection: PlatformConnection,
     ): Promise<void> {
+        /* "sync" is just a generic/descriptive label here, not tied to any branching logic. ------------ */
         await this.steamSyncQueue.add("sync", {
             connectionId: connection.id,
             userId: connection.userId,

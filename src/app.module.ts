@@ -59,7 +59,9 @@ import { RecommendationsModule } from "./recommendations/recommendations.module"
         }),
         BullModule.forRootAsync({
             imports: [ConfigModule],
+            /* put services that will be used in the factory function --------------------------------------- */
             inject: [ConfigService],
+            /* useFactory returns the config args when initializing BullModule ------------------------------ */
             useFactory: (configService: ConfigService) => ({
                 connection: {
                     url: configService.getOrThrow<string>("REDIS_URL"),
