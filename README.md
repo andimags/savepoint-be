@@ -171,12 +171,6 @@ See `.env.example` for a template.
 - Node.js
 - Docker (for local PostgreSQL and Redis)
 
-### Installation
-
-```bash
-npm install
-```
-
 ### Start dependencies
 
 PostgreSQL and Redis are provided via Docker Compose:
@@ -187,14 +181,28 @@ docker compose up -d
 
 ### Configure environment
 
+Create a `.env` file from the `.env.example` template and fill in the values:
+
 ```bash
 cp .env.example .env
+```
+
+### Install dependencies
+
+```bash
+npm install
 ```
 
 ### Run migrations
 
 ```bash
 npm run migration:run
+```
+
+### Seed the database
+
+```bash
+npm run seed
 ```
 
 ### Running locally
@@ -225,6 +233,7 @@ The API runs at `http://localhost:3001` by default.
 | `npm run migration:generate` | Generate a migration from entity changes. |
 | `npm run migration:run` | Apply pending migrations. |
 | `npm run migration:revert` | Revert the last migration. |
+| `npm run seed` | Seed the database with initial data. |
 
 ---
 
